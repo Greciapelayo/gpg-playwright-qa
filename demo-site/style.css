@@ -1,0 +1,12 @@
+body { font-family: system-ui, sans-serif; margin: 0; color: #2b2b2b; background: #fdf8f4; }
+header { background: #3d2c29; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+header a { color: #fff; margin-left: 1rem; text-decoration: none; }
+main { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+.card { background: #fff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+label { display: block; margin-top: .75rem; font-weight: 600; }
+input, select, textarea { width: 100%; padding: .5rem; margin-top: .25rem; box-sizing: border-box; }
+button { margin-top: 1rem; padding: .6rem 1.2rem; background: #b5838d; color: #fff; border: 0; border-radius: 6px; cursor: pointer; }
+.slots button { margin-right: .5rem; background: #e5989b; }
+.slots button.selected { background: #6d6875; }
+.error { color: #b00020; font-size: .9rem; }
+.success { color: #1b7f3b; font-weight: 600; }

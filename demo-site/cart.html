@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cart | GPG Grand Petit Glow</title><link rel="stylesheet" href="/style.css"></head>
+<body><script src="/nav.js"></script>
+<main>
+<h1>Your cart</h1>
+<div data-testid="cart-lines"></div>
+<p>Total: $<span data-testid="cart-total">0</span></p>
+<p data-testid="empty-cart" hidden>Your cart is empty.</p>
+<form id="checkout-form" novalidate>
+  <h2>Checkout</h2>
+  <label for="c-name">Full name</label><input id="c-name" required>
+  <label for="c-email">Email</label><input id="c-email" type="email" required>
+  <p class="error" data-testid="checkout-error" role="alert"></p>
+  <button type="submit">Place order</button>
+</form>
+<p class="success" data-testid="order-confirmation" hidden></p>
+<script>
+  const $ = (s) => document.querySelector(s);
+  function render() {
+    const items = gpgCart.read();
+    $("[data-testid=cart-lines]").innerHTML = items.map(i =>
+      `<div class="card" data-testid="cart-line" data-id="${i.id}">${i.name} <input aria-label="Quantity ${i.name}" type="number" min="0" value="${i.qty}" data-qty="${i.id}" style="width:5rem"> $${i.price * i.qty}</div>`).join("");
+    $("[data-testid=cart-total]").textContent = items.reduce((t, i) => t + i.price * i.qty, 0);
+    $("[data-testid=empty-cart]").hidden = items.length > 0;
+    $("#checkout-form").hidden = items.length === 0;
+    document.querySelectorAll("[data-qty]").forEach(inp => inp.addEventListener("change", () => {
+      const next = gpgCart.read().map(i => i.id === inp.dataset.qty ? { ...i, qty: Number(inp.value) } : i).filter(i => i.qty > 0);
+      gpgCart.write(next); render();
+    }));
+  }
+  render();
+  $("#checkout-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = $("#c-email").value;
+    if (!$("#c-name").value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $("[data-testid=checkout-error]").textContent = "Please enter your name and a valid email."; return; }
+    const total = $("[data-testid=cart-total]").textContent;
+    gpgCart.write([]);
+    $("#checkout-form").hidden = true; $("[data-testid=cart-lines]").innerHTML = "";
+    const c = $("[data-testid=order-confirmation]"); c.hidden = false; c.textContent = `Thank you! Your order of $${total} has been placed.`;
+  });
+</script>
+</main></body></html>

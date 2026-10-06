@@ -1,0 +1,19 @@
+{
+  "name": "gpg-playwright-qa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end and API test automation with Playwright + TypeScript for a replica of the GPG Grand Petit Glow website.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:api": "playwright test --project=api",
+    "report": "playwright show-report"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
+  }
+}

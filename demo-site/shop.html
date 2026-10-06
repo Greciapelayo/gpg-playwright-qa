@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop | GPG Grand Petit Glow</title><link rel="stylesheet" href="/style.css"></head>
+<body><script src="/nav.js"></script>
+<main>
+<h1>Shop</h1>
+<div data-testid="product-list"></div>
+<script>
+  fetch("/api/products").then(r => r.json()).then(list => {
+    document.querySelector("[data-testid=product-list]").innerHTML = list.map(p =>
+      `<div class="card" data-testid="product" data-id="${p.id}"><h2>${p.name}</h2><p data-testid="price">$${p.price}</p><button data-add="${p.id}">Add to cart</button></div>`).join("");
+    list.forEach(p => document.querySelector(`[data-add="${p.id}"]`).addEventListener("click", () => gpgCart.add(p)));
+  });
+</script>
+</main></body></html>
