@@ -10,8 +10,9 @@ End-to-end UI and REST API test automation with **Playwright + TypeScript**, bui
 
 | Area | Coverage |
 |---|---|
+| **Home page** | Hero call-to-action, featured products, services accordion, add to cart from home |
 | **Appointment booking** | Booking a facial end to end, booked slots disappearing, Sunday closure, required-field validation |
-| **Product menu & checkout** | Add to cart, cart badge and totals, quantity changes, placing an order, invalid email |
+| **Product menu & checkout** | Add to cart, quantity stepper, cart badge and totals, quantity changes, placing an order, invalid email |
 | **Contact form** | Successful submission and data-driven negative cases |
 | **Navigation & content** | Main menu, call-to-action, blog articles, broken internal links |
 | **REST API** | Response schema, status codes (200/201/400/409/422), double-booking protection, input validation |

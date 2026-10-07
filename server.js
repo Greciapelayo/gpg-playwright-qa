@@ -8,15 +8,15 @@ const PORT = process.env.PORT || 3000;
 const ROOT = path.join(__dirname, 'demo-site');
 
 const services = [
-  { id: 'hydra', name: 'Hydrating Facial', durationMin: 60, price: 85 },
-  { id: 'glow', name: 'Glow Facial', durationMin: 75, price: 110 },
-  { id: 'express', name: 'Express Facial', durationMin: 30, price: 50 },
+  { id: 'signature', name: 'GPG Signature Facial', durationMin: 90, price: 115 },
+  { id: 'signature-led', name: 'Signature Facial + LED Light Therapy', durationMin: 105, price: 140 },
+  { id: 'teen-glow', name: 'Teen Glow Facial', durationMin: 60, price: 75 },
 ];
 
 const products = [
-  { id: 'serum', name: 'Vitamin C Serum', price: 42 },
-  { id: 'cream', name: 'Night Cream', price: 38 },
-  { id: 'mask', name: 'Clay Mask', price: 25 },
+  { id: 'soap', name: 'Exfoliating Soap Bar', price: 10, thumb: 'soap' },
+  { id: 'brush', name: 'Dry Brushing Set', price: 18, thumb: 'brush' },
+  { id: 'honey-mask', name: 'Raw Honey Face Mask', price: 22, thumb: 'honey' },
 ];
 
 const OPENING_HOURS = ['10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
@@ -87,7 +87,7 @@ async function handleApi(req, res, url) {
   return sendJson(res, 404, { error: 'Not found' });
 }
 
-const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.jpg': 'image/jpeg' };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);

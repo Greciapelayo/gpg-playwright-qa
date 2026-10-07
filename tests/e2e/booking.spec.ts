@@ -7,7 +7,7 @@ test.describe('Appointment booking', () => {
 
   test('client can book an available facial', async ({ bookingPage }) => {
     const date = uniqueWeekday();
-    await bookingPage.chooseService('Glow Facial - $110');
+    await bookingPage.chooseService('GPG Signature Facial - $115');
     await bookingPage.chooseDate(date);
     await bookingPage.chooseTime('11:00');
     await bookingPage.fillContact('Ana Tremblay', 'ana@example.com');
@@ -19,7 +19,7 @@ test.describe('Appointment booking', () => {
 
   test('booked slot is no longer offered', async ({ bookingPage, page }) => {
     const date = uniqueWeekday();
-    await bookingPage.chooseService('Express Facial - $50');
+    await bookingPage.chooseService('Teen Glow Facial - $75');
     await bookingPage.chooseDate(date);
     await bookingPage.chooseTime('14:00');
     await bookingPage.fillContact('Luis Gagnon', 'luis@example.com');
@@ -39,7 +39,7 @@ test.describe('Appointment booking', () => {
   });
 
   test('shows validation errors when required fields are missing', async ({ bookingPage }) => {
-    await bookingPage.chooseService('Hydrating Facial - $85');
+    await bookingPage.chooseService('Signature Facial + LED Light Therapy - $140');
     await bookingPage.chooseDate(uniqueWeekday());
     await bookingPage.fillContact('', 'not-an-email');
     await bookingPage.submit.click();

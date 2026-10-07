@@ -3,7 +3,50 @@
 <title>Home | GPG Grand Petit Glow</title><link rel="stylesheet" href="/style.css"></head>
 <body><script src="/nav.js"></script>
 <main>
-<h1>Glow, naturally.</h1>
-<p>Facials and skincare designed with care in Montréal.</p>
-<a href="/booking.html" data-testid="cta-book"><button>Book a facial</button></a>
+<section class="terracotta hero"><div class="wrap split">
+  <div>
+    <h1>Glow Starts Here</h1>
+    <p class="lead">Discover easy, skin-loving solutions made to help you feel confident every day.</p>
+    <a href="/shop.html" class="button light">Shop now</a>
+  </div>
+  <div class="visual"><img src="/assets/logo.jpg" alt="GPG Grand Petit Glow logo"></div>
+</div></section>
+
+<section><div class="wrap center">
+  <h2>Featured Products</h2>
+  <div class="products" data-testid="product-list"></div>
+</div></section>
+
+<section id="services"><div class="wrap services">
+  <h2>In-Studio Services</h2>
+  <div class="accordion" data-testid="services">
+    <details open><summary>GPG Signature Facial</summary><div class="body">
+      <p class="meta">90 min · $115</p>
+      <p>A complete, personalized facial: skin diagnosis, double cleanse, exfoliation, gentle extractions, de-puffing massage with aromatherapy, mask, and a morning and evening routine made for you.</p></div></details>
+    <details><summary>Signature + LED Light Therapy</summary><div class="body">
+      <p class="meta">105 min · $140</p>
+      <p>The full Signature Facial plus a 15-minute LED session. Choose the light your skin needs (Renew, Clear, Calm, Even Tone and more) while you enjoy a hand massage.</p></div></details>
+    <details><summary>Teen Glow Facial</summary><div class="body">
+      <p class="meta">60 min · $75 · ages 13 to 17</p>
+      <p>A facial adapted to teenage skin that ends with a mini skincare class. With parent or guardian consent.</p></div></details>
+  </div>
+</div></section>
+
+<section class="terracotta cta"><div class="wrap split">
+  <div class="visual arch"></div>
+  <div>
+    <h2>Ready for Some Me-Time?</h2>
+    <p class="lead">Book your personalized appointment in just a few clicks. Your skin will thank you.</p>
+    <a href="/booking.html" class="button light" data-testid="cta-book">Book a facial</a>
+  </div>
+</div></section>
+
+<section><div class="wrap center">
+  <h2>Follow Our Daily Glow</h2>
+  <div class="social">
+    <a href="https://www.instagram.com/grandpetit.glow/" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1.1.4 2.2.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1.1.4-2.2.4-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1.1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1.1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 2c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.1.4-.3 1-.4 2.1-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.1 1 .3 2.1.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.1-.4.3-1 .4-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.1-1-.3-2.1-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.4a4.4 4.4 0 110 8.8 4.4 4.4 0 010-8.8zm0 7.2a2.8 2.8 0 100-5.6 2.8 2.8 0 000 5.6zm5.6-7.4a1 1 0 11-2 0 1 1 0 012 0z"/></svg></a>
+    <a href="https://www.facebook.com/" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.4 1.5-1.4h1.5V4.5c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.3H8v3h2.6V21h2.9z"/></svg></a>
+  </div>
+</div></section>
+<script>renderProducts(document.querySelector("[data-testid=product-list]"));</script>
 </main></body></html>

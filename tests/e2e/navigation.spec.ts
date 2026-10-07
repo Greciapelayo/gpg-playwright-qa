@@ -1,8 +1,8 @@
 import { test, expect } from '../../fixtures/test';
 
 const pages = [
-  { link: 'Our Story', path: '/story.html', heading: 'Our Story' },
-  { link: 'Book', path: '/booking.html', heading: 'Book a facial' },
+  { link: 'About', path: '/story.html', heading: 'Our Story' },
+  { link: 'Book now', path: '/booking.html', heading: 'Book a facial' },
   { link: 'Shop', path: '/shop.html', heading: 'Shop' },
   { link: 'Blog', path: '/blog.html', heading: 'Blog' },
   { link: 'Contact', path: '/contact.html', heading: 'Contact us' },
@@ -17,6 +17,13 @@ test.describe('Navigation and content', () => {
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
     });
   }
+
+  test('"Services" menu link shows the in-studio services', async ({ page }) => {
+    await page.goto('/blog.html');
+    await page.getByTestId('main-nav').getByRole('link', { name: 'Services' }).click();
+    await expect(page).toHaveURL('/#services');
+    await expect(page.getByRole('heading', { name: 'In-Studio Services' })).toBeInViewport();
+  });
 
   test('home call-to-action leads to booking', async ({ page }) => {
     await page.goto('/');

@@ -2,8 +2,8 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Book a facial | GPG Grand Petit Glow</title><link rel="stylesheet" href="/style.css"></head>
 <body><script src="/nav.js"></script>
-<main>
-<h1>Book a facial</h1>
+<main><div class="page"><div class="wrap">
+<div class="page-intro"><h1>Book a facial</h1><p class="lead">Choose your facial, a date and a time that suits you.</p></div>
 <form id="booking-form" novalidate>
   <label for="service">Service</label><select id="service" required><option value="">Choose a service</option></select>
   <label for="date">Date</label><input id="date" type="date" required>
@@ -41,4 +41,4 @@
     c.hidden = false; c.textContent = `Booking ${data.id} confirmed for ${data.date} at ${data.time}.`;
   });
 </script>
-</main></body></html>
+</div></div></main></body></html>

@@ -2,11 +2,11 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Cart | GPG Grand Petit Glow</title><link rel="stylesheet" href="/style.css"></head>
 <body><script src="/nav.js"></script>
-<main>
-<h1>Your cart</h1>
-<div data-testid="cart-lines"></div>
-<p>Total: $<span data-testid="cart-total">0</span></p>
-<p data-testid="empty-cart" hidden>Your cart is empty.</p>
+<main><div class="page"><div class="wrap">
+<div class="page-intro"><h1>Your cart</h1><p class="lead">Review your products and place your order.</p></div>
+<div class="cart-area"><div data-testid="cart-lines"></div>
+<p data-testid="empty-cart" hidden class="center">Your cart is empty. <a href="/shop.html">Visit the shop</a></p></div>
+<p class="total">Total: $<span data-testid="cart-total">0</span></p>
 <form id="checkout-form" novalidate>
   <h2>Checkout</h2>
   <label for="c-name">Full name</label><input id="c-name" required>
@@ -20,9 +20,10 @@
   function render() {
     const items = gpgCart.read();
     $("[data-testid=cart-lines]").innerHTML = items.map(i =>
-      `<div class="card" data-testid="cart-line" data-id="${i.id}">${i.name} <input aria-label="Quantity ${i.name}" type="number" min="0" value="${i.qty}" data-qty="${i.id}" style="width:5rem"> $${i.price * i.qty}</div>`).join("");
+      `<div class="cart-line" data-testid="cart-line" data-id="${i.id}"><span>${i.name}</span><input aria-label="Quantity ${i.name}" type="number" min="0" value="${i.qty}" data-qty="${i.id}"><span>$${i.price * i.qty}</span></div>`).join("");
     $("[data-testid=cart-total]").textContent = items.reduce((t, i) => t + i.price * i.qty, 0);
     $("[data-testid=empty-cart]").hidden = items.length > 0;
+    $(".total").hidden = items.length === 0;
     $("#checkout-form").hidden = items.length === 0;
     document.querySelectorAll("[data-qty]").forEach(inp => inp.addEventListener("change", () => {
       const next = gpgCart.read().map(i => i.id === inp.dataset.qty ? { ...i, qty: Number(inp.value) } : i).filter(i => i.qty > 0);
@@ -40,4 +41,4 @@
     const c = $("[data-testid=order-confirmation]"); c.hidden = false; c.textContent = `Thank you! Your order of $${total} has been placed.`;
   });
 </script>
-</main></body></html>
+</div></div></main></body></html>

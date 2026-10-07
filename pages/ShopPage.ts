@@ -13,6 +13,11 @@ export class ShopPage {
     await this.page.goto('/shop.html');
   }
 
+  async increaseQuantity(productName: string, times = 1) {
+    const plus = this.page.getByRole('button', { name: `Increase ${productName}` });
+    for (let i = 0; i < times; i++) await plus.click();
+  }
+
   async addToCart(productName: string) {
     await this.products.filter({ hasText: productName }).getByRole('button', { name: 'Add to cart' }).click();
   }

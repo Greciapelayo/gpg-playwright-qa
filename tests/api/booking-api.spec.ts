@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { uniqueWeekday, nextSunday } from '../../fixtures/test';
 
 const validBooking = () => ({
-  serviceId: 'hydra',
+  serviceId: 'signature',
   date: uniqueWeekday(),
   time: '10:00',
   name: 'API Test',
