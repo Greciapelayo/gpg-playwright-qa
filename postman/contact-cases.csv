@@ -1,0 +1,5 @@
+case,name,email,message,expectedStatus,invalidField
+valid message,Sofia,sofia@example.com,Do you offer gift cards?,200,
+empty name,,sofia@example.com,Do you offer gift cards?,400,name
+invalid email,Sofia,sofia.com,Do you offer gift cards?,400,email
+message too short,Sofia,sofia@example.com,Hi,400,message

@@ -24,6 +24,16 @@ jobs:
         run: npx tsc
       - name: Run tests
         run: npx playwright test
+      - name: Run Postman collections (Newman)
+        if: ${{ !cancelled() }}
+        run: npm run test:newman
+      - name: Upload Newman report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report/
+          retention-days: 14
       - name: Upload HTML report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

@@ -1,0 +1,56 @@
+{
+  "info": {
+    "name": "GPG Contact form - data-driven",
+    "description": "Run with: newman run ... -d postman/contact-cases.csv",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Contact form case: {{case}}",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/contact",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "contact"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{name}}\",\n  \"email\": \"{{email}}\",\n  \"message\": \"{{message}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const expected = Number(pm.iterationData.get('expectedStatus'));",
+              "pm.test(`[${pm.iterationData.get('case')}] status is ${expected}`, () => pm.response.to.have.status(expected));",
+              "const field = pm.iterationData.get('invalidField');",
+              "if (field) {",
+              "  pm.test(`[${pm.iterationData.get('case')}] reports \"${field}\"`, () => pm.expect(pm.response.json().errors).to.include(field));",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

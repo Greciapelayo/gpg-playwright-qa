@@ -2,7 +2,7 @@
 
 ![Playwright Tests](https://github.com/Greciapelayo/gpg-playwright-qa/actions/workflows/playwright.yml/badge.svg)
 
-End-to-end UI and REST API test automation with **Playwright + TypeScript**, built around the main user journeys of the website of **GPG Grand Petit Glow**, my facial-care business in Montréal.
+End-to-end UI, **REST** and **SOAP** API test automation with **Playwright + TypeScript** and **Postman/Newman**, built around the main user journeys of the website of **GPG Grand Petit Glow**, my facial-care business in Montréal.
 
 > The production website is currently being rebuilt. To keep this project public and runnable by anyone, the repository includes a lightweight **replica** of the site (`demo-site/` + `server.js`) with the same features. The test suite runs against this replica locally and in CI.
 
@@ -16,8 +16,19 @@ End-to-end UI and REST API test automation with **Playwright + TypeScript**, bui
 | **Contact form** | Successful submission and data-driven negative cases |
 | **Navigation & content** | Main menu, call-to-action, blog articles, broken internal links |
 | **REST API** | Response schema, status codes (200/201/400/409/422), double-booking protection, input validation |
+| **SOAP API** | WSDL contract, XPath assertions on responses, SOAP Faults (validation, business rules, SOAPAction mismatch, malformed envelope), Content-Type |
 
 Each UI test runs on **Chromium, Firefox and Mobile Safari (iPhone 13 emulation)**; API tests run in their own project.
+
+## Postman / Newman
+
+The same API is also covered by Postman collections in [`postman/`](postman/), run headless with **Newman** locally and in CI:
+
+- **`GPG-API.postman_collection.json`**: REST and SOAP requests, chained through collection variables (a booking created over REST is checked over SOAP), with JSON-schema validation, response-time checks and XML parsing (`xml2js`) for SOAP.
+- **`GPG-contact-data-driven.postman_collection.json`**: data-driven run, one iteration per row of `contact-cases.csv`.
+- Reports: CLI, JUnit (for CI) and HTML (`newman-report/`).
+
+Import the collections and `local.postman_environment.json` into the Postman app to explore them, or run everything with `npm run test:newman`. The JSON files are generated from `postman/build_collection.py` so the test scripts are easy to review.
 
 ## Approach
 
@@ -34,11 +45,13 @@ Each UI test runs on **Chromium, Firefox and Mobile Safari (iPhone 13 emulation)
 ```
 ├── demo-site/            # Replica of the GPG website (static pages)
 ├── server.js             # Serves the site + REST API (no dependencies)
+├── soap.js               # SOAP 1.1 booking service + WSDL
 ├── pages/                # Page Objects
-├── fixtures/test.ts      # Custom fixtures and test data helpers
+├── fixtures/             # Custom fixtures, test data helpers, SOAP/XPath helpers
 ├── tests/
 │   ├── e2e/              # UI tests (booking, shop, contact, navigation)
-│   └── api/              # REST API tests
+│   └── api/              # REST and SOAP API tests
+├── postman/              # Postman collections, environment, data file, Newman runner
 ├── playwright.config.ts
 └── .github/workflows/    # CI pipeline
 ```
@@ -50,11 +63,12 @@ npm install
 npx playwright install
 npm test                 # all projects
 npm run test:chromium    # UI tests on Chromium only
-npm run test:api         # API tests only
+npm run test:api         # REST + SOAP API tests only
+npm run test:newman      # Postman collections with Newman (starts the server itself)
 npm run report           # open the HTML report
 ```
 
-The demo site starts automatically (Playwright `webServer`). To browse it manually: `npm start`, then open http://localhost:3000.
+The demo site starts automatically (Playwright `webServer`). To browse it manually: `npm start`, then open http://localhost:3000. The SOAP WSDL is at http://localhost:3000/soap/booking?wsdl.
 
 ## Author
 

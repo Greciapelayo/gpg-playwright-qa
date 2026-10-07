@@ -1,0 +1,658 @@
+{
+  "info": {
+    "name": "GPG Booking API (REST + SOAP)",
+    "description": "REST and SOAP tests for the GPG booking API. Run in order (requests are chained).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('bookingDate') || pm.info.iteration === 0 && pm.info.requestName === 'Get services') {",
+          "  const d = new Date();",
+          "  d.setUTCDate(d.getUTCDate() + 30 + Math.floor(Math.random() * 3000));",
+          "  if (d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1);",
+          "  pm.collectionVariables.set('bookingDate', d.toISOString().slice(0, 10));",
+          "  const s = new Date(d); s.setUTCDate(s.getUTCDate() + ((7 - s.getUTCDay()) % 7 || 7));",
+          "  pm.collectionVariables.set('sundayDate', s.toISOString().slice(0, 10));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "bookingDate",
+      "value": ""
+    },
+    {
+      "key": "sundayDate",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "soapBookingId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "REST",
+      "item": [
+        {
+          "name": "Get services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "services"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response time under 500 ms', () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.test('Content-Type is JSON', () => pm.response.to.have.header('Content-Type', 'application/json'));",
+                  "",
+                  "const schema = {",
+                  "  type: 'array', minItems: 1,",
+                  "  items: { type: 'object', required: ['id', 'name', 'durationMin', 'price'],",
+                  "    properties: { id: { type: 'string' }, name: { type: 'string' }, durationMin: { type: 'integer' }, price: { type: 'number' } } }",
+                  "};",
+                  "pm.test('Matches the JSON schema', () => pm.response.to.have.jsonSchema(schema));",
+                  "pm.test('Signature facial costs 115', () => {",
+                  "  const signature = pm.response.json().find(s => s.id === 'signature');",
+                  "  pm.expect(signature.price).to.eql(115);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get slots for a weekday",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/slots?date={{bookingDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "slots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{bookingDate}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Six slots are available', () => pm.expect(pm.response.json().slots).to.have.lengthOf(6));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"signature\",\n  \"date\": \"{{bookingDate}}\",\n  \"time\": \"10:00\",\n  \"name\": \"Postman Test\",\n  \"email\": \"postman@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "const booking = pm.response.json();",
+                  "pm.test('Booking id has the expected format', () => pm.expect(booking.id).to.match(/^BK-\\d+$/));",
+                  "pm.test('Echoes the requested slot', () => {",
+                  "  pm.expect(booking.date).to.eql(pm.collectionVariables.get('bookingDate'));",
+                  "  pm.expect(booking.time).to.eql('10:00');",
+                  "});",
+                  "// Chaining: save the id for later requests",
+                  "pm.collectionVariables.set('bookingId', booking.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Double booking is rejected",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"signature\",\n  \"date\": \"{{bookingDate}}\",\n  \"time\": \"10:00\",\n  \"name\": \"Someone else\",\n  \"email\": \"other@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('Error message', () => pm.expect(pm.response.json().error).to.eql('Slot already booked'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Booked slot disappears",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/slots?date={{bookingDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "slots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{bookingDate}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('10:00 is no longer offered', () => pm.expect(pm.response.json().slots).to.not.include('10:00'));",
+                  "pm.test('Five slots left', () => pm.expect(pm.response.json().slots).to.have.lengthOf(5));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid booking lists every field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"unknown\",\n  \"date\": \"x\",\n  \"time\": \"09:00\",\n  \"name\": \" \",\n  \"email\": \"nope\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Every invalid field is reported', () =>",
+                  "  pm.expect(pm.response.json().errors).to.eql(['serviceId', 'date', 'time', 'name', 'email']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sunday booking is rejected",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"signature\",\n  \"date\": \"{{sundayDate}}\",\n  \"time\": \"10:00\",\n  \"name\": \"Postman Test\",\n  \"email\": \"postman@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SOAP",
+      "item": [
+        {
+          "name": "Get WSDL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/soap/booking?wsdl",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soap",
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "wsdl",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('WSDL lists the three operations', () => {",
+                  "  const text = pm.response.text();",
+                  "  ['GetServices', 'GetAvailableSlots', 'CreateBooking'].forEach(op => pm.expect(text).to.include(`operation name=\"${op}\"`));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GetServices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml; charset=utf-8"
+              },
+              {
+                "key": "SOAPAction",
+                "value": "\"GetServices\""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soap/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soap",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gpg=\"http://gpg.example.com/booking\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <gpg:GetServicesRequest>\n    </gpg:GetServicesRequest>\n  </soapenv:Body>\n</soapenv:Envelope>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body;",
+                  "require('xml2js').parseString(pm.response.text(), { explicitArray: false }, (err, xml) => {",
+                  "  pm.test('Response is valid XML', () => pm.expect(err).to.be.null);",
+                  "  body = xml['soap:Envelope']['soap:Body'];",
+                  "});",
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const services = [].concat(body['gpg:GetServicesResponse']['gpg:service']);",
+                  "pm.test('Three services', () => pm.expect(services).to.have.lengthOf(3));",
+                  "pm.test('Signature facial costs 115', () => {",
+                  "  const signature = services.find(s => s['gpg:id'] === 'signature');",
+                  "  pm.expect(Number(signature['gpg:price'])).to.eql(115);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GetAvailableSlots",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml; charset=utf-8"
+              },
+              {
+                "key": "SOAPAction",
+                "value": "\"GetAvailableSlots\""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soap/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soap",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gpg=\"http://gpg.example.com/booking\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <gpg:GetAvailableSlotsRequest>\n      <gpg:date>{{bookingDate}}</gpg:date>\n    </gpg:GetAvailableSlotsRequest>\n  </soapenv:Body>\n</soapenv:Envelope>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body;",
+                  "require('xml2js').parseString(pm.response.text(), { explicitArray: false }, (err, xml) => {",
+                  "  pm.test('Response is valid XML', () => pm.expect(err).to.be.null);",
+                  "  body = xml['soap:Envelope']['soap:Body'];",
+                  "});",
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const slots = [].concat(body['gpg:GetAvailableSlotsResponse']['gpg:slot'] || []);",
+                  "pm.test('10:00 already taken by the REST booking', () => pm.expect(slots).to.not.include('10:00'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CreateBooking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml; charset=utf-8"
+              },
+              {
+                "key": "SOAPAction",
+                "value": "\"CreateBooking\""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soap/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soap",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gpg=\"http://gpg.example.com/booking\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <gpg:CreateBookingRequest>\n      <gpg:serviceId>teen-glow</gpg:serviceId>\n      <gpg:date>{{bookingDate}}</gpg:date>\n      <gpg:time>14:00</gpg:time>\n      <gpg:name>SOAP Postman</gpg:name>\n      <gpg:email>soap@example.com</gpg:email>\n    </gpg:CreateBookingRequest>\n  </soapenv:Body>\n</soapenv:Envelope>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body;",
+                  "require('xml2js').parseString(pm.response.text(), { explicitArray: false }, (err, xml) => {",
+                  "  pm.test('Response is valid XML', () => pm.expect(err).to.be.null);",
+                  "  body = xml['soap:Envelope']['soap:Body'];",
+                  "});",
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const response = body['gpg:CreateBookingResponse'];",
+                  "pm.test('Status is CONFIRMED', () => pm.expect(response['gpg:status']).to.eql('CONFIRMED'));",
+                  "pm.test('Booking id format', () => pm.expect(response['gpg:bookingId']).to.match(/^BK-\\d+$/));",
+                  "pm.collectionVariables.set('soapBookingId', response['gpg:bookingId']);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CreateBooking - validation fault",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml; charset=utf-8"
+              },
+              {
+                "key": "SOAPAction",
+                "value": "\"CreateBooking\""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soap/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soap",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gpg=\"http://gpg.example.com/booking\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <gpg:CreateBookingRequest>\n      <gpg:serviceId>unknown</gpg:serviceId>\n      <gpg:date>x</gpg:date>\n      <gpg:time>09:00</gpg:time>\n      <gpg:name> </gpg:name>\n      <gpg:email>nope</gpg:email>\n    </gpg:CreateBookingRequest>\n  </soapenv:Body>\n</soapenv:Envelope>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body;",
+                  "require('xml2js').parseString(pm.response.text(), { explicitArray: false }, (err, xml) => {",
+                  "  pm.test('Response is valid XML', () => pm.expect(err).to.be.null);",
+                  "  body = xml['soap:Envelope']['soap:Body'];",
+                  "});",
+                  "pm.test('Status is 500 (SOAP Fault)', () => pm.response.to.have.status(500));",
+                  "const fault = body['soap:Fault'];",
+                  "pm.test('faultcode is soap:Client', () => pm.expect(fault.faultcode).to.eql('soap:Client'));",
+                  "pm.test('faultstring', () => pm.expect(fault.faultstring).to.eql('Validation failed'));",
+                  "pm.test('Detail lists the invalid fields', () => {",
+                  "  const fields = [].concat(fault.detail['gpg:errors']['gpg:field']);",
+                  "  pm.expect(fields).to.eql(['serviceId', 'date', 'time', 'name', 'email']);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SOAPAction mismatch fault",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/xml; charset=utf-8"
+              },
+              {
+                "key": "SOAPAction",
+                "value": "\"CreateBooking\""
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soap/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soap",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gpg=\"http://gpg.example.com/booking\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <gpg:GetServicesRequest>\n    </gpg:GetServicesRequest>\n  </soapenv:Body>\n</soapenv:Envelope>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body;",
+                  "require('xml2js').parseString(pm.response.text(), { explicitArray: false }, (err, xml) => {",
+                  "  pm.test('Response is valid XML', () => pm.expect(err).to.be.null);",
+                  "  body = xml['soap:Envelope']['soap:Body'];",
+                  "});",
+                  "pm.test('Status is 500', () => pm.response.to.have.status(500));",
+                  "pm.test('Explains the mismatch', () => pm.expect(body['soap:Fault'].faultstring).to.include('does not match'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

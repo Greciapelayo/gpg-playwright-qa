@@ -2,18 +2,24 @@
   "name": "gpg-playwright-qa",
   "version": "1.0.0",
   "private": true,
-  "description": "End-to-end and API test automation with Playwright + TypeScript for a replica of the GPG Grand Petit Glow website.",
+  "description": "End-to-end, REST and SOAP API test automation with Playwright + TypeScript and Postman/Newman for a replica of the GPG Grand Petit Glow website.",
   "scripts": {
     "start": "node server.js",
     "test": "playwright test",
     "test:chromium": "playwright test --project=chromium",
     "test:api": "playwright test --project=api",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "test:newman": "node postman/run-newman.js",
+    "postman:build": "python3 postman/build_collection.py"
   },
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.4",
-    "typescript": "^7.0.2"
+    "@xmldom/xmldom": "^0.9.12",
+    "newman": "^6.2.2",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "typescript": "^7.0.2",
+    "xpath": "^0.0.35"
   }
 }

@@ -1,8 +1,9 @@
-// Minimal demo server for the GPG site replica: serves static pages and a small REST API.
+// Minimal demo server for the GPG site replica: serves static pages, a REST API and a SOAP API (soap.js).
 // No dependencies, so the test suite runs anywhere Node.js is installed.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { handleSoap } = require('./soap');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = path.join(__dirname, 'demo-site');
@@ -29,6 +30,26 @@ const isEmail = (s) => typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.tes
 function availableSlots(date) {
   if (isSunday(date)) return [];
   return OPENING_HOURS.filter((t) => !bookings.has(`${date} ${t}`));
+}
+
+function validateBooking(b) {
+  const errors = [];
+  if (!services.some((s) => s.id === b.serviceId)) errors.push('serviceId');
+  if (!isValidDate(b.date)) errors.push('date');
+  if (!OPENING_HOURS.includes(b.time)) errors.push('time');
+  if (!b.name || !String(b.name).trim()) errors.push('name');
+  if (!isEmail(b.email)) errors.push('email');
+  return errors;
+}
+
+// Returns { booking } or { error, status } for business-rule failures.
+function createBooking(b) {
+  if (isSunday(b.date)) return { error: 'Closed on Sundays', status: 422 };
+  const key = `${b.date} ${b.time}`;
+  if (bookings.has(key)) return { error: 'Slot already booked', status: 409 };
+  const booking = { id: `BK-${bookings.size + 1000}`, ...b };
+  bookings.set(key, booking);
+  return { booking };
 }
 
 function sendJson(res, status, body) {
@@ -58,20 +79,12 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'POST' && url.pathname === '/api/bookings') {
     const b = await readBody(req);
-    const errors = [];
     if (!b) return sendJson(res, 400, { errors: ['Malformed JSON'] });
-    if (!services.some((s) => s.id === b.serviceId)) errors.push('serviceId');
-    if (!isValidDate(b.date)) errors.push('date');
-    if (!OPENING_HOURS.includes(b.time)) errors.push('time');
-    if (!b.name || !String(b.name).trim()) errors.push('name');
-    if (!isEmail(b.email)) errors.push('email');
+    const errors = validateBooking(b);
     if (errors.length) return sendJson(res, 400, { errors });
-    if (isSunday(b.date)) return sendJson(res, 422, { error: 'Closed on Sundays' });
-    const key = `${b.date} ${b.time}`;
-    if (bookings.has(key)) return sendJson(res, 409, { error: 'Slot already booked' });
-    const booking = { id: `BK-${bookings.size + 1000}`, ...b };
-    bookings.set(key, booking);
-    return sendJson(res, 201, booking);
+    const result = createBooking(b);
+    if (result.error) return sendJson(res, result.status, { error: result.error });
+    return sendJson(res, 201, result.booking);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/contact') {
@@ -92,6 +105,9 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': '
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname.startsWith('/api/')) return handleApi(req, res, url);
+  if (url.pathname === '/soap/booking') {
+    return handleSoap(req, res, url, { services, isValidDate, availableSlots, validateBooking, createBooking });
+  }
 
   const file = path.normalize(path.join(ROOT, url.pathname === '/' ? 'index.html' : url.pathname));
   if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
