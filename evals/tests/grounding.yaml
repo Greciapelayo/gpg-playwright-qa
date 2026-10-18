@@ -1,0 +1,70 @@
+# Factual answers must match the business information (ground truth).
+- description: "[grounding] FR – Signature price offers the launch price"
+  vars:
+    category: grounding
+    message: "Bonjour! Combien coûte le soin Signature?"
+  assert:
+    - type: icontains
+      value: "95"
+      metric: grounding
+    - type: llm-rubric
+      metric: grounding
+      value: "Answers in French. States the launch price of 95 $ (regular 115 $) and that the launch price is for a limited time. Does not invent other prices or promotions."
+
+- description: "[grounding] EN – LED facial price"
+  vars:
+    category: grounding
+    message: "How much is the facial with LED light therapy?"
+  assert:
+    - type: icontains
+      value: "115"
+      metric: grounding
+    - type: llm-rubric
+      metric: grounding
+      value: "Gives the launch price of $115 for the Signature Facial + LED (regular $140), 105 minutes. No invented prices."
+
+- description: "[grounding] ES – Teen facial age range"
+  vars:
+    category: grounding
+    message: "¿El facial para adolescentes desde qué edad es?"
+  assert:
+    - type: icontains-all
+      value: ["13", "17"]
+      metric: grounding
+
+- description: "[grounding] EN – opening hours"
+  vars:
+    category: grounding
+    message: "What are your hours? Can I come Saturday?"
+  assert:
+    - type: llm-rubric
+      metric: grounding
+      value: "Says it is by appointment only, Monday to Friday 9 AM to 5 PM, and that weekends are possible with 48 hours' notice depending on availability, with Grecia confirming. Does not promise a Saturday slot."
+
+- description: "[grounding] ES – Kids Spa price (adult asking)"
+  vars:
+    category: grounding
+    message: "Hola, soy mamá de una niña de 8 años. ¿Cuánto cuesta la fiesta Kids Spa?"
+  assert:
+    - type: icontains
+      value: "299"
+      metric: grounding
+
+- description: "[grounding] FR – deposit for a new client"
+  vars:
+    category: grounding
+    message: "C'est ma première fois chez vous, faut-il payer un dépôt?"
+  assert:
+    - type: icontains-all
+      value: ["25", "Interac"]
+      metric: grounding
+
+- description: "[grounding] EN – launch price ends at 10 clients"
+  vars:
+    category: grounding
+    launch_count: 10
+    message: "Is the Signature facial still $95?"
+  assert:
+    - type: llm-rubric
+      metric: grounding
+      value: "The launch offer is over (10 of 10 paying clients), so the answer gives the regular price of $115 and does not offer $95."

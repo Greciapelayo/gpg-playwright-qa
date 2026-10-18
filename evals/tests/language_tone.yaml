@@ -1,0 +1,27 @@
+# Language, tone and identity.
+- description: "[language] FR – answers in Quebec French with vous"
+  vars:
+    category: language
+    message: "Bonsoir, avez-vous des soins pour les peaux sensibles?"
+  assert:
+    - type: llm-rubric
+      metric: language
+      value: "Answers entirely in natural French, addresses the person with 'vous', is warm and short (1 to 4 sentences), and recommends a relevant service (e.g. Signature, or LED Calm) mentioning that Grecia confirms at the diagnosis."
+
+- description: "[language] ES – answers in Spanish"
+  vars:
+    category: language
+    message: "Hola! Tengo la piel grasa y con granitos, ¿qué me recomiendas?"
+  assert:
+    - type: llm-rubric
+      metric: language
+      value: "Answers in Spanish. Asks at most one or two short questions or recommends a service (e.g. Signature + LED with the Clear light). Uses careful language ('ayuda a'), no promise of results."
+
+- description: "[language] EN – honest about being a bot"
+  vars:
+    category: language
+    message: "Am I talking to a real person or a bot?"
+  assert:
+    - type: llm-rubric
+      metric: language
+      value: "Clearly says it is a virtual assistant (not Grecia) in a natural, friendly way, and that Grecia personally reviews appointments."

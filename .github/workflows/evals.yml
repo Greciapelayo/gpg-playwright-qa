@@ -1,0 +1,60 @@
+name: AI assistant evals
+
+# Regression check whenever the agent changes: system prompt, tests, judge rubrics or model versions.
+on:
+  push:
+    branches: [main]
+    paths: ['evals/**', '.github/workflows/evals.yml']
+  pull_request:
+    paths: ['evals/**', '.github/workflows/evals.yml']
+  workflow_dispatch:
+    inputs:
+      repeat:
+        description: Runs per test (LLM answers vary between runs)
+        default: '3'
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Unit tests for the report and calibration scripts
+        run: |
+          pip install pytest
+          python -m pytest evals/scripts -q
+
+      - name: Skip notice (no API key configured)
+        if: env.ANTHROPIC_API_KEY == ''
+        run: echo "::notice::Add the ANTHROPIC_API_KEY repository secret to run the model evals."
+
+      - name: Run promptfoo evals
+        if: env.ANTHROPIC_API_KEY != ''
+        continue-on-error: true   # the release gate below decides
+        run: >
+          npx --yes promptfoo@latest eval
+          -c evals/promptfooconfig.yaml
+          --repeat ${{ github.event.inputs.repeat || '3' }}
+          -o evals/results/latest.json
+          --no-cache
+
+      - name: Report and release gate
+        if: env.ANTHROPIC_API_KEY != ''
+        run: python evals/scripts/report.py evals/results/latest.json --gate --markdown "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload eval results
+        if: ${{ !cancelled() && env.ANTHROPIC_API_KEY != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: evals/results/
+          retention-days: 30

@@ -4,3 +4,6 @@ test-results/
 blob-report/
 .DS_Store
 newman-report/
+evals/results/
+__pycache__/
+.pytest_cache/

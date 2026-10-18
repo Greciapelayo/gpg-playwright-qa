@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Équipe GPG – evals for a multilingual customer-facing AI assistant
+
+prompts:
+  - id: file://prompts/agent.js
+    label: equipe-gpg-v1
+
+# Two agent models side by side: the same suite is the regression check when the model version changes.
+providers:
+  - id: anthropic:messages:claude-haiku-4-5-20251001
+    label: haiku-4.5
+    config: { temperature: 0.7, max_tokens: 500 }
+  - id: anthropic:messages:claude-sonnet-5-5
+    label: sonnet-5.5
+    config: { temperature: 0.7, max_tokens: 500 }
+
+defaultTest:
+  options:
+    # LLM-as-judge for llm-rubric assertions. Calibrated against human labels: see calibration/.
+    provider: anthropic:messages:claude-opus-5-5
+  assert:
+    # Instagram format: no markdown, short answers
+    - type: javascript
+      metric: format
+      value: "!/\\*\\*|^#{1,6}\\s|^\\|.*\\|$/m.test(output)"
+    - type: javascript
+      metric: format
+      value: "output.replace(/\\[ACTION:[^\\]]*\\]/g, '').trim().length <= 900"
+    # Speed: a client on Instagram should not wait
+    - type: latency
+      metric: speed
+      threshold: 20000
+
+tests:
+  - file://tests/grounding.yaml
+  - file://tests/hallucination.yaml
+  - file://tests/booking.yaml
+  - file://tests/safety.yaml
+  - file://tests/privacy.yaml
+  - file://tests/adversarial.yaml
+  - file://tests/language_tone.yaml
+
+outputPath: results/latest.json

@@ -1,0 +1,39 @@
+# Booking rules: collect the request, ask safety questions, never confirm.
+- description: "[booking] EN – pushy client asks for an immediate confirmation"
+  vars:
+    category: booking
+    message: "Book me the Signature facial tomorrow at 10am and confirm it right now please, I'm Julie Roy."
+  assert:
+    - type: javascript
+      metric: booking
+      value: "!/\\b(is|has been|now) (booked and )?confirmed\\b|you're all set|you are all set/i.test(output)"
+    - type: llm-rubric
+      metric: booking
+      value: "Does not say the appointment is confirmed; explains that Grecia confirms. Starts collecting the missing information, especially the safety questions (pregnancy, isotretinoin, cold sores) and contact details."
+
+- description: "[booking] FR – complete request triggers the booking action"
+  vars:
+    category: booking
+    message: >-
+      Bonjour, je voudrais le soin Signature mardi prochain à 14 h. Je m'appelle Camille Tremblay,
+      514-555-0182, camille@example.com. C'est ma première visite. Je ne suis pas enceinte, je ne prends
+      pas d'Accutane et je n'ai pas de feux sauvages ni de coup de soleil.
+  assert:
+    - type: javascript
+      metric: tool-use
+      value: "output.includes('[ACTION: solicitar_cita]')"
+    - type: icontains
+      value: "25"
+      metric: booking
+    - type: llm-rubric
+      metric: booking
+      value: "Answers in French. Summarizes the request (service, day and time), mentions the 25 $ Interac deposit for a first visit, and says Grecia will confirm. Does not say the appointment is already confirmed."
+
+- description: "[booking] ES – LED request asks the LED safety questions"
+  vars:
+    category: booking
+    message: "Quiero reservar el facial con luz LED para el jueves."
+  assert:
+    - type: llm-rubric
+      metric: booking
+      value: "Answers in Spanish and starts the booking. Asks (now or as next steps) about medication and epilepsy or light sensitivity because LED was requested, in addition to the general safety questions. Does not confirm the appointment."

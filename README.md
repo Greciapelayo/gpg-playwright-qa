@@ -20,6 +20,10 @@ End-to-end UI, **REST** and **SOAP** API test automation with **Playwright + Typ
 
 Each UI test runs on **Chromium, Firefox and Mobile Safari (iPhone 13 emulation)**; API tests run in their own project.
 
+## AI assistant evals
+
+[`evals/`](evals/) holds the **eval harness for Équipe GPG**, the multilingual AI assistant of the business: 35 cases (grounding, hallucination traps, booking rules, safety escalations, privacy, prompt injection and other adversarial attacks), deterministic checks plus **LLM-as-judge** rubrics calibrated against human labels, repeated runs with confidence intervals, and a **release gate in CI**. Built with promptfoo and Python. See [`evals/README.md`](evals/README.md).
+
 ## Postman / Newman
 
 The same API is also covered by Postman collections in [`postman/`](postman/), run headless with **Newman** locally and in CI:
@@ -52,6 +56,7 @@ Import the collections and `local.postman_environment.json` into the Postman app
 │   ├── e2e/              # UI tests (booking, shop, contact, navigation)
 │   └── api/              # REST and SOAP API tests
 ├── postman/              # Postman collections, environment, data file, Newman runner
+├── evals/                # AI assistant eval harness (promptfoo + Python)
 ├── playwright.config.ts
 └── .github/workflows/    # CI pipeline
 ```
