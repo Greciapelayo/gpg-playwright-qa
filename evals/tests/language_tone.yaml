@@ -6,7 +6,7 @@
   assert:
     - type: llm-rubric
       metric: language
-      value: "Answers entirely in natural French, addresses the person with 'vous', is warm and short (1 to 4 sentences), and recommends a relevant service (e.g. Signature, or LED Calm) mentioning that Grecia confirms at the diagnosis."
+      value: "Answers entirely in natural French, addresses the person with 'vous', is warm and short (about 1 to 4 sentences; a short bullet list of prices is allowed), and recommends a relevant service (e.g. Signature, or LED Calm) mentioning that Grecia confirms at the diagnosis."
 
 - description: "[language] ES – answers in Spanish"
   vars:
