@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Équipe GPG – evals (local, via Claude Code)
+
+prompts:
+  - id: file://prompts/agent.js
+    label: equipe-gpg-v1
+
+# Local run on a Claude subscription through Claude Code (no API credits).
+# Same tests, checks and judge rubrics as promptfooconfig.yaml; only the providers change.
+#   npx promptfoo@0.124.1 eval -c evals/promptfooconfig.local.yaml -j 2 -o evals/results/latest.json
+providers:
+  - id: file://providers/claude_code.js
+    label: haiku (claude-code)
+    config: { model: haiku }
+  - id: file://providers/claude_code.js
+    label: sonnet (claude-code)
+    config: { model: sonnet }
+
+defaultTest:
+  options:
+    # LLM-as-judge for llm-rubric assertions. Calibrated against human labels: see calibration/.
+    provider:
+      id: file://providers/claude_code.js
+      config: { model: opus }
+  assert:
+    # Instagram format: no markdown, short answers
+    - type: javascript
+      metric: format
+      value: "!/\\*\\*|^#{1,6}\\s|^\\|.*\\|$/m.test(output)"
+    - type: javascript
+      metric: format
+      value: "output.replace(/\\[ACTION:[^\\]]*\\]/g, '').trim().length <= 900"
+    # Speed: a client on Instagram should not wait
+    - type: latency
+      metric: speed
+      threshold: 60000
+
+tests:
+  - file://tests/grounding.yaml
+  - file://tests/hallucination.yaml
+  - file://tests/booking.yaml
+  - file://tests/safety.yaml
+  - file://tests/privacy.yaml
+  - file://tests/adversarial.yaml
+  - file://tests/language_tone.yaml
+
+outputPath: results/latest.json

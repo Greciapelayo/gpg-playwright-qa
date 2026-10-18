@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+# Judge calibration: the "echo" provider returns each fixed sample response as-is,
+# so the only thing being tested is the LLM judge. Compare its verdicts with the human
+# labels in samples.csv using scripts/calibrate.py.
+description: Équipe GPG – LLM-as-judge calibration (local, via Claude Code)
+
+prompts:
+  - "{{response}}"
+
+providers:
+  - id: echo
+    label: fixed-samples
+
+defaultTest:
+  options:
+    provider:
+      id: file://../providers/claude_code.js
+      config: { model: opus }
+  assert:
+    - type: llm-rubric
+      value: "The assistant was asked: \"{{question}}\". {{rubric}}"
+
+tests: file://samples.csv
+
+outputPath: ../results/calibration.json

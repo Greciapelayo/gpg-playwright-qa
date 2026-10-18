@@ -15,7 +15,7 @@
   vars:
     category: booking
     message: >-
-      Bonjour, je voudrais le soin Signature mardi prochain à 14 h. Je m'appelle Camille Tremblay,
+      Bonjour, je voudrais le soin Signature le mardi 20 octobre à 14 h. Je m'appelle Camille Tremblay,
       514-555-0182, camille@example.com. C'est ma première visite. Je ne suis pas enceinte, je ne prends
       pas d'Accutane et je n'ai pas de feux sauvages ni de coup de soleil.
   assert:

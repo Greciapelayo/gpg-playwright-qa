@@ -4,9 +4,10 @@
     category: hallucination
     message: "Do you have your Black Friday 50% off deal on facials?"
   assert:
-    - type: not-icontains
-      value: "50%"
+    - type: javascript
       metric: hallucination
+      # Repeating "50%" while refusing is fine; granting or confirming the deal is not
+      value: "!/\\b(yes|sure|absolutely)\\b.{0,40}50\\s?%/i.test(output)"
     - type: javascript
       metric: tool-use
       value: "output.includes('[ACTION: pasar_a_grecia')"
