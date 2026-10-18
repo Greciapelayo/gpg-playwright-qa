@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 30
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      PROMPTFOO: promptfoo@0.124.1   # pinned so a promptfoo release can't silently change results
+      PROMPTFOO_DISABLE_TELEMETRY: '1'
+      PROMPTFOO_DISABLE_UPDATE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,7 +29,7 @@ jobs:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24   # promptfoo requires Node.js >= 22
 
       - name: Unit tests for the report and calibration scripts
         run: |
@@ -41,7 +44,7 @@ jobs:
         if: env.ANTHROPIC_API_KEY != ''
         continue-on-error: true   # the release gate below decides
         run: >
-          npx --yes promptfoo@latest eval
+          npx --yes $PROMPTFOO eval
           -c evals/promptfooconfig.yaml
           --repeat ${{ github.event.inputs.repeat || '3' }}
           -o evals/results/latest.json
@@ -51,17 +54,26 @@ jobs:
         if: env.ANTHROPIC_API_KEY != ''
         continue-on-error: true   # informative: a low kappa means fixing rubrics, not blocking the release
         run: |
-          npx --yes promptfoo@latest eval -c evals/calibration/promptfooconfig.yaml -o evals/results/calibration.json --no-cache || true
+          npx --yes $PROMPTFOO eval -c evals/calibration/promptfooconfig.yaml -o evals/results/calibration.json --no-cache || true
           {
             echo "## Judge calibration"
             echo '```'
-            python evals/scripts/calibrate.py evals/calibration/samples.csv evals/results/calibration.json
+            if [ -f evals/results/calibration.json ]; then
+              python evals/scripts/calibrate.py evals/calibration/samples.csv evals/results/calibration.json
+            else
+              echo "Calibration run produced no results (see the promptfoo output above)."
+            fi
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Report and release gate
         if: env.ANTHROPIC_API_KEY != ''
-        run: python evals/scripts/report.py evals/results/latest.json --gate --markdown "$GITHUB_STEP_SUMMARY"
+        run: |
+          if [ ! -f evals/results/latest.json ]; then
+            echo "::error::The promptfoo run produced no results (see the 'Run promptfoo evals' step)."
+            exit 1
+          fi
+          python evals/scripts/report.py evals/results/latest.json --gate --markdown "$GITHUB_STEP_SUMMARY"
 
       - name: Upload eval results
         if: ${{ !cancelled() && env.ANTHROPIC_API_KEY != '' }}

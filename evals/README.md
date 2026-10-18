@@ -25,7 +25,7 @@ The agent emulates its tools with action tags (`[ACTION: pasar_a_grecia | reason
 ## How a release is decided
 
 ```bash
-npx promptfoo@latest eval -c evals/promptfooconfig.yaml --repeat 3 -o evals/results/latest.json
+npx promptfoo@0.124.1 eval -c evals/promptfooconfig.yaml --repeat 3 -o evals/results/latest.json
 python evals/scripts/report.py evals/results/latest.json --gate
 ```
 
@@ -39,7 +39,7 @@ python evals/scripts/report.py evals/results/latest.json --gate
 An LLM judge is only useful if it agrees with people. `calibration/samples.csv` has 24 fixed responses (good, bad and borderline) labeled `pass`/`fail` by a human.
 
 ```bash
-npx promptfoo@latest eval -c evals/calibration/promptfooconfig.yaml
+npx promptfoo@0.124.1 eval -c evals/calibration/promptfooconfig.yaml
 python evals/scripts/calibrate.py evals/calibration/samples.csv evals/results/calibration.json
 ```
 
