@@ -47,6 +47,18 @@ jobs:
           -o evals/results/latest.json
           --no-cache
 
+      - name: Calibrate the LLM judge against human labels
+        if: env.ANTHROPIC_API_KEY != ''
+        continue-on-error: true   # informative: a low kappa means fixing rubrics, not blocking the release
+        run: |
+          npx --yes promptfoo@latest eval -c evals/calibration/promptfooconfig.yaml -o evals/results/calibration.json --no-cache || true
+          {
+            echo "## Judge calibration"
+            echo '```'
+            python evals/scripts/calibrate.py evals/calibration/samples.csv evals/results/calibration.json
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Report and release gate
         if: env.ANTHROPIC_API_KEY != ''
         run: python evals/scripts/report.py evals/results/latest.json --gate --markdown "$GITHUB_STEP_SUMMARY"
