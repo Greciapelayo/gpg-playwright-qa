@@ -34,6 +34,18 @@ python evals/scripts/report.py evals/results/latest.json --gate
 - `report.py` gives the pass rate per model and category with a **95% Wilson confidence interval**, the **flaky tests** (mixed results across repeats), latency p50/p95 and cost, then applies the **gate**: pass rate ≥ 90% and zero critical failures.
 - In CI (`.github/workflows/evals.yml`) this runs on every change under `evals/`, and the report appears in the GitHub job summary.
 
+**Latest results:** see [RESULTS.md](RESULTS.md) – judge kappa 0.67 vs. human labels, Sonnet 91% with all critical categories at 100%, Haiku blocked by the gate, and how each failure was triaged.
+
+## Run it locally on a Claude subscription (no API credits)
+
+`promptfooconfig.local.yaml` runs the same tests, checks and rubrics through the Claude Code CLI (`providers/claude_code.js`) instead of the API. Tools, MCP servers, settings and session history are disabled so the model only sees what each test sends. Requires Node.js ≥ 22 and a logged-in `claude`.
+
+```bash
+npx promptfoo@0.124.1 eval -c evals/calibration/promptfooconfig.local.yaml -o evals/results/calibration.json
+npx promptfoo@0.124.1 eval -c evals/promptfooconfig.local.yaml -j 2 -o evals/results/latest.json
+python evals/scripts/report.py evals/results/latest.json --gate
+```
+
 ## Calibrating the judge against human labels
 
 An LLM judge is only useful if it agrees with people. `calibration/samples.csv` has 24 fixed responses (good, bad and borderline) labeled `pass`/`fail` by a human.
