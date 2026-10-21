@@ -77,5 +77,5 @@ The demo site starts automatically (Playwright `webServer`). To browse it manual
 
 ## Author
 
-**Grecia Garcia Pelayo** – Senior QA Automation Engineer
+**Grecia Garcia Pelayo** – Senior QA Automation Specialist
 [LinkedIn](https://www.linkedin.com/in/greciagarciapelayo/)
