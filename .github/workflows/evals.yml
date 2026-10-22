@@ -46,7 +46,7 @@ jobs:
         run: >
           npx --yes $PROMPTFOO eval
           -c evals/promptfooconfig.yaml
-          --repeat ${{ github.event.inputs.repeat || '3' }}
+          --repeat ${{ github.event.inputs.repeat || '1' }}   # pushes: 1 run per test (cheap); manual runs: 3 by default
           -o evals/results/latest.json
           --no-cache
 
