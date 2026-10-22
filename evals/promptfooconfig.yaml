@@ -9,10 +9,10 @@ prompts:
 providers:
   - id: anthropic:messages:claude-haiku-5-5
     label: haiku-5.5
-    config: { temperature: 0.7, max_tokens: 500 }
+    config: { max_tokens: 8000 }   # no temperature: the API rejects sampling params; thinking counts toward max_tokens
   - id: anthropic:messages:claude-sonnet-5-5
     label: sonnet-5.5
-    config: { temperature: 0.7, max_tokens: 500 }
+    config: { max_tokens: 8000 }   # no temperature: the API rejects sampling params; thinking counts toward max_tokens
 
 defaultTest:
   options:
