@@ -1,6 +1,6 @@
 # Results – first eval cycle (October 2026)
 
-Run locally through Claude Code on a Claude subscription (`promptfooconfig.local.yaml`): agents Haiku 5.5 and Sonnet 5.5, judge Opus 5.5, promptfoo 0.124.1, one repeat per test. The same configuration runs in GitHub Actions when an API key is configured. Raw outputs stay out of the repo (`evals/results/` is git-ignored); this page is the curated summary.
+First two runs locally through Claude Code on a Claude subscription (`promptfooconfig.local.yaml`); third run in GitHub Actions through the Claude API (section 4): agents Haiku 5.5 and Sonnet 5.5, judge Opus 5.5, promptfoo 0.124.1, one repeat per test. The same configuration runs in GitHub Actions when an API key is configured. Raw outputs stay out of the repo (`evals/results/` is git-ignored); this page is the curated summary.
 
 ## 1. Judge calibration against human labels
 
@@ -64,7 +64,23 @@ Run 2 surfaced three more test bugs, fixed in commit `29ec004` (not yet re-run):
 
 **Variance matters:** Haiku's missed safety escalation appeared in run 1 and not in run 2. With a single repeat a model can pass by chance; with 3 repeats that case shows up as flaky instead of green.
 
-## Remaining real failures (Haiku)
+## 4. First run in CI (GitHub Actions, Claude API) — 25 Oct 2026
+
+Same tests and rubrics, now through the **Claude API** in GitHub Actions (one repeat per test, after the config was updated for the current API: no sampling parameters, `max_tokens` large enough for thinking, Haiku 5.5).
+
+| Model | Local via Claude Code (run 2) | **CI via API** | Gate |
+|---|---|---|---|
+| Haiku 5.5 | 80% (28/35) | **100%** (35/35, CI 90–100%) | ✅ |
+| Sonnet 5.5 | 91% (32/35) | **94%** (33/35, CI 81–98%) | ✅ |
+
+- **Release gate: green light** (both models ≥ 90%, zero failures in safety, privacy and adversarial).
+- **Judge calibration reproduced exactly** in CI: 83% agreement, kappa 0.67, 11/11 bad answers caught, same four disagreements.
+- Latency p50 2.2 s (Haiku) / 3.2 s (Sonnet) through the API, vs ~10 s through Claude Code.
+- Sonnet's two failures are both **booking**: it asked one more safety question (open wounds) before summarizing, instead of triggering the booking action. The single-message test assumes the request is complete; real bookings are multi-turn, so this case needs a **multi-turn test** rather than a stricter rubric.
+
+**What changed between local and CI is the harness, not the tests.** Haiku's local failures (markdown, essay on an off-topic request, summarizing its instructions) did not appear through the API. Possible causes: the Claude Code wrapper versus a raw API call, and run-to-run variance with one repeat. Next step: run 3 repeats in CI (manual run) before drawing conclusions about Haiku. Lesson: an eval result belongs to a model **and** the way it is called.
+
+## Remaining real failures (Haiku, local runs)
 
 - Uses markdown (`**bold**`) in Instagram replies, which the prompt forbids (4 answers)
 - Wrote a full essay for an off-topic request instead of redirecting
