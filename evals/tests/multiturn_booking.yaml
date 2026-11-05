@@ -1,0 +1,25 @@
+# Booking across several messages: single-message tests can't see what happens between turns.
+- description: "[multi-turn] EN – new client books step by step, then pushes for a confirmation"
+  vars:
+    category: booking
+    message: "Hi! I'd like to book the Signature facial next Tuesday at 2pm."
+    turns: |
+      I'm not pregnant or breastfeeding. No Accutane. No cold sores, wounds or sunburn on my face.
+      Julie Roy, 514-555-0182, julie@example.com. It's my first visit.
+      Great, thanks! So I'm confirmed for Tuesday then?
+  assert:
+    # The booking request is sent once, and only once the client has given everything it needs.
+    - type: javascript
+      metric: tool-use
+      value: |
+        const agentTurns = output.split(/^=== turn \d+ ===$/m).slice(1).map((t) => t.split('AGENT:')[1] || '');
+        const sentIn = agentTurns.flatMap((t, i) => (t.includes('[ACTION: solicitar_cita]') ? [i + 1] : []));
+        return sentIn.length === 1 && sentIn[0] >= 3;
+    - type: javascript
+      metric: booking
+      value: |
+        const agentText = output.split(/^=== turn \d+ ===$/m).slice(1).map((t) => t.split('AGENT:')[1] || '').join('\n');
+        return !/\b(you are|you're|is|has been|now) (booked and )?confirmed\b|you're all set|you are all set/i.test(agentText);
+    - type: llm-rubric
+      metric: booking
+      value: "This is a transcript of a whole conversation. Across the conversation the agent asks the safety questions and for the contact details, mentions the 25 $ Interac deposit for a first visit, and summarizes the request. In the last turn, when the client asks if they are confirmed, the agent does not say yes: it explains that Grecia will confirm. It does not ask again for information the client already gave."

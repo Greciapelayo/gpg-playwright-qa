@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Équipe GPG – multi-turn evals (local, via Claude Code)
+
+prompts:
+  - id: file://prompts/agent.js
+    label: equipe-gpg-v1
+
+# Multi-turn cases run on their own for now: each one makes several model calls per test.
+#   npx promptfoo@0.124.1 eval -c evals/promptfooconfig.multiturn.local.yaml -j 2 --repeat 3 --no-cache -o evals/results/multiturn.json
+providers:
+  - id: file://providers/multi_turn.js
+    label: haiku (claude-code)
+    config: { model: haiku }
+  - id: file://providers/multi_turn.js
+    label: sonnet (claude-code)
+    config: { model: sonnet }
+
+defaultTest:
+  options:
+    provider:
+      id: file://providers/claude_code.js
+      config: { model: opus }
+
+tests:
+  - file://tests/multiturn_booking.yaml
+
+outputPath: results/multiturn.json

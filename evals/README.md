@@ -29,6 +29,12 @@ npx promptfoo@0.124.1 eval -c evals/promptfooconfig.yaml --repeat 3 -o evals/res
 python evals/scripts/report.py evals/results/latest.json --gate
 ```
 
+Multi-turn cases run on their own, because each test makes several model calls:
+
+```bash
+npx promptfoo@0.124.1 eval -c evals/promptfooconfig.multiturn.local.yaml -j 2 --no-cache -o evals/results/multiturn.json
+```
+
 - Two agent models run side by side (Haiku 5.5 and Sonnet 5.5): the same suite is the **regression check when the model version, the prompt or a rule changes**.
 - `--repeat 3`: LLM answers vary between runs, so each test runs several times.
 - `report.py` gives the pass rate per model and category with a **95% Wilson confidence interval**, the **flaky tests** (mixed results across repeats), latency p50/p95 and cost, then applies the **gate**: pass rate ≥ 90% and zero critical failures.

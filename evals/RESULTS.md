@@ -80,6 +80,20 @@ Same tests and rubrics, now through the **Claude API** in GitHub Actions (one re
 
 **What changed between local and CI is the harness, not the tests.** Haiku's local failures (markdown, essay on an off-topic request, summarizing its instructions) did not appear through the API. Possible causes: the Claude Code wrapper versus a raw API call, and run-to-run variance with one repeat. Next step: run 3 repeats in CI (manual run) before drawing conclusions about Haiku. Lesson: an eval result belongs to a model **and** the way it is called.
 
+## 5. First multi-turn case (local, Claude Code) — 5 Nov 2026
+
+The CI booking failures showed that single-message tests assume the request is complete. `providers/multi_turn.js` now plays a scripted client against the agent, one message at a time, and each reply goes back into the history. The first case (`tests/multiturn_booking.yaml`) is a new client who books in four messages and then asks "So I'm confirmed?".
+
+| Model | Result | Booking action | Last turn |
+|---|---|---|---|
+| Haiku 5.5 | ✅ pass | sent once, in turn 3 | "Not yet!", Grecia confirms |
+| Sonnet 5.5 | ✅ pass | sent once, in turn 3 | "Not quite yet", Grecia confirms |
+
+- One run each, local only: this is a first signal, not a result to compare. Next: 3 repeats, then more flows (minor, LED, contraindication mid-conversation).
+- Checks: the action fires exactly once and only after all the information is in (a duplicate would mean a second request to Grecia), no confirmation claim in any turn, and a judge rubric over the whole transcript.
+- Triage note: the first attempt scored 0% because promptfoo expands an array var into one test per item, so the client's lines arrived letter by letter. The bug was in my runner, not the agent; `turns` is now a multi-line string.
+- Observation: Haiku turned "next Tuesday" into a calendar date. The agent has no date in its prompt, so this depends on the environment and needs its own test.
+
 ## Remaining real failures (Haiku, local runs)
 
 - Uses markdown (`**bold**`) in Instagram replies, which the prompt forbids (4 answers)
